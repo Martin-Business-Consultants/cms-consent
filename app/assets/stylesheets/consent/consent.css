@@ -1,0 +1,21 @@
+/* Consent (cms-consent): Settings › Consent, drawn with the admin's
+   components (STYLE.md); what's Consent's alone is here, in the admin's
+   tokens, so it follows Settings › Branding and the dark theme. The banner
+   on the website is not the admin: it carries its own styles
+   (Consent::Banner). */
+@layer components {
+  /* The Scripts global's items, in a box, a kind to choose beside each. */
+  .consent-scripts {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+  }
+
+  .consent-scripts__item {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: space-between;
+    padding: var(--space-2) var(--space-3);
+  }
+}

@@ -7,43 +7,43 @@
 <% end %>
 
 <%= form_with url: settings_consent_path, id: "consent_form", method: :patch, scope: :consent do |form| %>
-  <%= tag.fieldset class: "space-y-6", disabled: !can_write do %>
-    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
-      <div class="space-y-1">
-        <h2 class="<%= ui(:heading) %>">The banner</h2>
-        <p class="text-sm text-gray-500">Shown to a visitor until they choose: Accept all, Only necessary, or a choice per kind. Their choice is kept a year; a link to <code>#cookie-settings</code> anywhere on the site opens it again.</p>
+  <%= tag.fieldset class: "stack stack--lg", disabled: !can_write do %>
+    <section class="panel panel--padded fields">
+      <div class="stack stack--xs">
+        <h2 class="heading">The banner</h2>
+        <p class="text-muted">Shown to a visitor until they choose: Accept all, Only necessary, or a choice per kind. Their choice is kept a year; a link to <code>#cookie-settings</code> anywhere on the site opens it again.</p>
       </div>
-      <label class="flex items-center gap-2 text-sm text-gray-700">
+      <label class="choice">
         <%= form.hidden_field :banner, value: "0", id: nil %>
         <%= form.check_box :banner, { checked: @settings["banner"], id: nil }, "1", nil %>
         <span>Show the banner</span>
       </label>
       <%= settings_field "What it says" do %>
-        <%= form.text_area :message, value: @settings["message"], rows: 3, class: "w-full" %>
+        <%= form.text_area :message, value: @settings["message"], rows: 3 %>
       <% end %>
       <%= settings_field "Privacy policy", hint: "Its address, linked from the banner: /privacy-policy, say." do %>
-        <%= form.text_field :policy_url, value: @settings["policy_url"], placeholder: "/privacy-policy", class: "w-full" %>
+        <%= form.text_field :policy_url, value: @settings["policy_url"], placeholder: "/privacy-policy" %>
       <% end %>
-      <label class="flex items-center gap-2 text-sm text-gray-700">
+      <label class="choice">
         <%= form.hidden_field :consent_mode, value: "0", id: nil %>
         <%= form.check_box :consent_mode, { checked: @settings["consent_mode"], id: nil }, "1", nil %>
         <span>Google Consent Mode: Google’s tags start with everything denied, and follow the visitor’s choice</span>
       </label>
     </section>
 
-    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
-      <div class="space-y-1">
-        <h2 class="<%= ui(:heading) %>">Which scripts wait</h2>
-        <p class="text-sm text-gray-500">Each item in the Scripts global, by the kind of thing it does. Necessary ones run as always; the rest only once a visitor accepts their kind. One not set here waits as Analytics.</p>
+    <section class="panel panel--padded fields">
+      <div class="stack stack--xs">
+        <h2 class="heading">Which scripts wait</h2>
+        <p class="text-muted">Each item in the Scripts global, by the kind of thing it does. Necessary ones run as always; the rest only once a visitor accepts their kind. One not set here waits as Analytics.</p>
       </div>
       <% if @items.empty? then %>
-        <p class="text-sm text-gray-500">The Scripts global has no items yet.</p>
+        <p class="text-muted">The Scripts global has no items yet.</p>
       <% else %>
-        <ul class="divide-y divide-gray-100 rounded-lg border border-gray-200">
+        <ul class="divided consent-scripts">
           <% @items.each do |item| %>
             <%# herb:key item["name"] %>
-            <li class="flex flex-wrap items-center justify-between gap-3 px-3 py-2">
-              <span class="text-sm font-medium text-gray-900"><%= item["name"].presence || "Unnamed" %></span>
+            <li class="consent-scripts__item">
+              <span class="text-medium text-ink"><%= item["name"].presence || "Unnamed" %></span>
               <%= select_tag "consent[categories][#{item["name"]}]", options_for_select(Consent::CATEGORIES.invert.to_a, Consent.category_for(item)),
                     id: nil, aria: { label: "Kind" } %>
             </li>

@@ -17,8 +17,8 @@ module Consent
     end
 
     config.to_prepare do
-      Cms::Plugins.register :consent, name: "Consent", version: "1.0.0", author: "Martin Business Consultants",
-        enabled_by_default: false, requires: ">= 1.27",
+      Cms::Plugins.register :consent, name: "Consent", version: "1.1.0", author: "Martin Business Consultants",
+        enabled_by_default: false, requires: ">= 1.30",
         description: "A cookie consent banner on the website: the Scripts global's analytics and marketing scripts " \
                      "run only once a visitor agrees."
 
@@ -32,6 +32,7 @@ module Consent
       Cms::Plugins.settings :consent, "Consent", -> { settings_consent_path },
         description: "The cookie banner, and which scripts wait for a visitor's consent.", capability: "settings:read",
         group: "Workspace"
+      Cms::Plugins.stylesheet :consent, "consent/consent"
     end
   end
 end
