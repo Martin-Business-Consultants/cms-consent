@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name = "consent"
-  spec.version = "1.1.0"
+  spec.version = "1.2.0"
   spec.summary = "A cookie consent banner for LibrePublish CMS: the Scripts global's analytics and marketing scripts wait for a visitor's yes"
   spec.authors = ["Martin Business Consultants"]
   spec.files = Dir["{app,config,db,lib}/**/*"]

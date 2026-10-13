@@ -31,14 +31,29 @@ RSpec.describe "The Consent plugin", type: :request do
     get "/"
     page = Nokogiri::HTML5(response.body)
 
-    ga = page.css("script[data-consent=analytics]")
-    expect(ga.map { it["type"] }).to all(eq("text/plain"))
-    expect(ga.first["src"]).to include("googletagmanager")
+    # Consent Mode is on: Google's tag runs, quiet until the visitor agrees, so Google sees it installed.
+    expect(page.css("script[data-consent=analytics]")).to be_empty
+    expect(page.at("script[src*=googletagmanager]")["type"]).to be_nil
+    expect(response.body).to include('<script>gtag("config","G-1")</script>')
     expect(page.at("img[data-consent=marketing]")["src"]).to be_nil
     expect(page.at("img[data-consent=marketing]")["data-consent-src"]).to include("px.example")
     expect(response.body).to include("<script>fonts()</script>")
     expect(response.body).to include('gtag("consent","default"')
     expect(page.at("[data-lp-consent]")).to be_present
+  end
+
+  it "holds Google's tag back too when Consent Mode is off, and still holds others' scripts with it" do
+    Setting.set(Consent::SETTING_KEY, {"consent_mode" => false})
+    get "/"
+    ga = Nokogiri::HTML5(response.body).css("script[data-consent=analytics]")
+    expect(ga.map { it["type"] }).to all(eq("text/plain"))
+    expect(ga.first["src"]).to include("googletagmanager")
+
+    Setting.set(Consent::SETTING_KEY, {"consent_mode" => true})
+    Global.find_by!(slug: "scripts").update!(data: {"items" => [{"name" => "Mixed", "head" => %(<script>gtag("config","G-1")</script><script src="https://connect.facebook.net/fbevents.js"></script><script>fbq("init","1")</script>)}]})
+    get "/"
+    page = Nokogiri::HTML5(response.body)
+    expect(page.css("script[data-consent=analytics]").map { it["src"] || it.text }).to contain_exactly("https://connect.facebook.net/fbevents.js", %(fbq("init","1")))
   end
 
   it "is chosen in Settings › Consent: the words, the policy, and each item's kind" do

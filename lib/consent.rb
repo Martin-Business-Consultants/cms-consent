@@ -43,20 +43,25 @@ module Consent
       category = category_for(item)
       next item if category == "necessary"
 
-      item.merge(part => hold(item[part].to_s, category))
+      item.merge(part => hold(item[part].to_s, category, google: !settings["consent_mode"]))
     end
     part == "head" && settings["consent_mode"] ? [consent_mode_item, *held] : held
   end
 
   # HTML whose scripts don't run and whose frames and pixels don't load
-  # until the banner's script lets `category` go.
-  def hold(html, category)
+  # until the banner's script lets `category` go. With Consent Mode on
+  # (`google: false`), Google's own tag (gtag.js, Tag Manager, and the
+  # gtag()/dataLayer lines that set it up) runs at once: Consent Mode keeps it
+  # from storing anything until the visitor agrees, and Google sees the tag
+  # installed, as its setup checks expect.
+  def hold(html, category, google: true)
     return html if html.blank?
 
     fragment = Nokogiri::HTML5::DocumentFragment.parse(html)
     fragment.css("script").each do |script|
       type = script["type"].to_s.strip.downcase
       next unless SCRIPT_TYPES.include?(type)
+      next if !google && google_tag?(script)
 
       script["data-consent"] = category
       script["data-consent-type"] = script["type"].to_s
@@ -68,6 +73,15 @@ module Consent
       element.remove_attribute("src")
     end
     fragment.to_html
+  end
+
+  # Google's tag or its setup: loaded from googletagmanager.com, or an inline
+  # script that only talks to gtag() or the dataLayer (Tag Manager's snippet too).
+  def google_tag?(script)
+    return script["src"].to_s.match?(%r{\Ahttps://www\.googletagmanager\.com/(gtag/js|gtm\.js)}) if script["src"].present?
+
+    code = script.text
+    code.match?(/\bgtag\(|\bdataLayer\b/) && code.scan(%r{https?://[^\s'"]+}).all? { it.start_with?("https://www.googletagmanager.com/") }
   end
 
   # Google Consent Mode v2: everything denied until the visitor chooses
